@@ -138,8 +138,7 @@ class MediaPlayer extends HTMLElement {
         :host([hidden]) { display: none !important; }
         video, audio { width: 100%; border-radius: 8px; background: black; }
         .icon { width: 14px; height: 14px; fill: white; }
-        .media-play-controls, .media-time-controls { opacity: 0; transition: opacity 0.3s ease-in-out; }
-        :host(:hover) .media-play-controls, :host(:hover) .media-time-controls { opacity: 1; }
+        .media-play-controls, .media-time-controls { opacity: 1; transition: opacity 0.3s ease-in-out; }
         .media-play-controls { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
         .media-time-controls { position: absolute; bottom: 10px; left: 10px; right: 10px; background: rgba(0,0,0,0.6); padding: 8px; border-radius: 6px; display: flex; align-items: center; gap: 10px; color: white; font-size: 12px; }
         button { background: #1f2933; border: none; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; }
@@ -155,12 +154,12 @@ class MediaPlayer extends HTMLElement {
         .media-container { position: relative; }
         .media-live-indicator { color: red; font-weight: bold; margin-right: 6px; font-size: 12px; }
         .hidden { display: none !important; }
+        .media-play-controls, .media-time-controls { transition: opacity 0.3s ease-in-out; }
+        .media-play-controls.controls-hidden, .media-time-controls.controls-hidden { opacity: 0; }
 
         /* Fullscreen styles */
         :host(:fullscreen) { background: black; }
         :host(:fullscreen) video, :host(:fullscreen) audio { max-height: 100vh; }
-        :host(:fullscreen) .media-play-controls,
-        :host(:fullscreen) .media-time-controls { opacity: 1; }
         :host(:fullscreen) .media-time-controls { bottom: 20px; left: 20px; right: 20px; }
       </style>
 
@@ -298,6 +297,30 @@ class MediaPlayer extends HTMLElement {
 
     const seekTime = 5;
 
+    const showControls = () => {
+      shadow
+        .querySelector(".media-play-controls")
+        .classList.remove("controls-hidden");
+      shadow
+        .querySelector(".media-time-controls")
+        .classList.remove("controls-hidden");
+    };
+
+    const hideControls = () => {
+      shadow
+        .querySelector(".media-play-controls")
+        .classList.add("controls-hidden");
+      shadow
+        .querySelector(".media-time-controls")
+        .classList.add("controls-hidden");
+    };
+
+    const resetControlsTimeout = () => {
+      clearTimeout(this.controlsTimeout);
+      showControls();
+      this.controlsTimeout = setTimeout(hideControls, 3000); // Hide after 3 seconds
+    };
+
     const updateLiveStatus = () => {
       // If duration is Infinity, NaN, or 0 → consider it "live"
       if (
@@ -332,6 +355,16 @@ class MediaPlayer extends HTMLElement {
       const m = Math.floor(time / 60);
       const s = Math.floor(time % 60);
       return `${m}:${s.toString().padStart(2, "0")}`;
+    };
+
+    media.onclick = () => {
+      if (media.paused) {
+        media.play();
+        updatePlay(true);
+      } else {
+        media.pause();
+        updatePlay(false);
+      }
     };
 
     playButton.onclick = playButtonControls.onclick = () => {
@@ -387,6 +420,14 @@ class MediaPlayer extends HTMLElement {
       }
       // Apply saved mute state
       updateMute(this.mediaConfig.isMuted);
+      // Apply autoplay state
+      if (this.autoplay) {
+        media.play();
+        updatePlay(true);
+      } else {
+        media.pause();
+        updatePlay(false);
+      }
     });
     media.addEventListener("durationchange", updateLiveStatus);
 
@@ -444,6 +485,34 @@ class MediaPlayer extends HTMLElement {
           break;
       }
     });
+
+    // Auto-hide controls functionality
+    const mediaContainer = shadow.querySelector(".media-container");
+
+    // Show controls on mouse enter and reset timeout
+    mediaContainer.addEventListener("mouseenter", resetControlsTimeout);
+
+    // Reset timeout on mouse movement (for when mouse is already over)
+    mediaContainer.addEventListener("mousemove", resetControlsTimeout);
+
+    // Start the initial timeout to hide controls after 3 seconds
+    resetControlsTimeout();
+
+    // Show controls on keyboard interaction
+    window.addEventListener("keydown", (e) => {
+      // Only show controls for media-related keyboard shortcuts
+      if ([" ", "KeyM", "ArrowRight", "ArrowLeft", "KeyF"].includes(e.code)) {
+        resetControlsTimeout();
+      }
+    });
+  }
+
+  disconnectedCallback() {
+    // Clear the controls timeout when component is removed
+    if (this.controlsTimeout) {
+      clearTimeout(this.controlsTimeout);
+      this.controlsTimeout = null;
+    }
   }
 
   attributeChangedCallback() {
@@ -503,23 +572,18 @@ class MediaPlayer extends HTMLElement {
   }
 
   play() {
-    // this.shadowRoot.querySelector(".media-element")?.play();
-    const shadow = this.shadowRoot;
-    console.log("🚀 ~ MediaPlayer ~ play ~ shadow:", shadow);
-    const media = shadow.querySelector(".media-element");
-    console.log("🚀 ~ MediaPlayer ~ play ~ media:", media);
-
-    media.play().catch((err) => {
-      console.warn("Failed to play media:", err);
-    });
+    const media = this.shadowRoot.querySelector(".media-element");
+    if (media) {
+      return media.play().catch((err) => {
+        console.warn("Failed to play media:", err);
+      });
+    }
   }
   pause() {
-    // this.shadowRoot.querySelector(".media-element")?.pause();
-    const shadow = this.shadowRoot;
-    console.log("🚀 ~ MediaPlayer ~ pause ~ shadow:", shadow);
-    const media = shadow.querySelector(".media-element");
-    console.log("🚀 ~ MediaPlayer ~ pause ~ media:", media);
-    media.pause();
+    const media = this.shadowRoot.querySelector(".media-element");
+    if (media) {
+      media.pause();
+    }
   }
   get paused() {
     return this.shadowRoot.querySelector(".media-element")?.paused;
