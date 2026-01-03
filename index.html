@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Screen Recorder</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <h2>🎥 Recorder</h2>
+          <span class="badge">History</span>
+        </div>
+
+        <ul id="recordingsList" class="recordings"></ul>
+      </aside>
+      
+      <main class="content">
+        <div class="top-bar">
+          <div class="status" id="status">
+            <span class="dot"></span>
+            <span>Not Recording</span>
+          </div>
+          <div class="status-indicators">
+            <div
+              id="systemAudioIndicator"
+              class="system-audio-indicator"
+              hidden
+            >
+              <small
+                >🔊 <strong>System Audio:</strong> Capturing computer
+                audio</small
+              >
+            </div>
+
+            <div id="echoPrevention" class="echo-prevention" hidden>
+              <small
+                >🛡️ <strong>Echo Prevention:</strong> Aggressive audio
+                processing active</small
+              >
+            </div>
+
+            <div id="echoWarning" class="echo-warning" hidden>
+              <small
+                >💡 <strong>Echo Prevention:</strong> Use headphones or reduce
+                speaker volume to avoid audio feedback</small
+              >
+            </div>
+
+            <div class="controls">
+              <button id="shareBtn" class="btn primary">Share Screen</button>
+              <button id="stopBtn" class="btn danger" hidden>Stop</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="video-wrapper">
+          <!-- <video id="preview" controls hidden></video> -->
+          <media-player id="preview" type="video" hidden></media-player>
+          <div class="placeholder" id="placeholder">
+            <p>No screen shared</p>
+            <small>Click "Share Screen" to start</small>
+          </div>
+          <button id="closeRecordingBtn" class="close-recording-btn" hidden>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      </main>
+    </div>
+
+    <script src="media-player.js" defer></script>
+    <script src="script.js"></script>
+  </body>
+</html>
