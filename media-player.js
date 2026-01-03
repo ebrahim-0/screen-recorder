@@ -134,7 +134,7 @@ class MediaPlayer extends HTMLElement {
     this.shadowRoot.innerHTML = `
       <style>
         * { box-sizing: border-box; }
-        :host { display: block; margin: auto; }
+        :host { display: block; max-width: 1200px; margin: auto; }
         :host([hidden]) { display: none !important; }
         video, audio { width: 100%; border-radius: 8px; background: black; }
         .icon { width: 14px; height: 14px; fill: white; }
@@ -291,6 +291,7 @@ class MediaPlayer extends HTMLElement {
     const seekBackwardButton = shadow.querySelector(
       ".media-seek-backward-button"
     );
+    const fullscreenButton = shadow.querySelector(".media-fullscreen-button");
     const currentTimeEl = shadow.querySelector(".media-time-current");
     const durationEl = shadow.querySelector(".media-time-duration");
     const liveIndicator = shadow.querySelector(".media-live-indicator");
@@ -352,18 +353,17 @@ class MediaPlayer extends HTMLElement {
     seekBackwardButton.onclick = () => {
       media.currentTime -= seekTime;
     };
-
-    // fullscreenButton.onclick = () => {
-    //   if (!document.fullscreenElement) {
-    //     this.requestFullscreen().catch((err) => {
-    //       console.warn("Failed to enter fullscreen:", err);
-    //     });
-    //   } else {
-    //     document.exitFullscreen().catch((err) => {
-    //       console.warn("Failed to exit fullscreen:", err);
-    //     });
-    //   }
-    // };
+    fullscreenButton.onclick = () => {
+      if (!document.fullscreenElement) {
+        this.requestFullscreen().catch((err) => {
+          console.warn("Failed to enter fullscreen:", err);
+        });
+      } else {
+        document.exitFullscreen().catch((err) => {
+          console.warn("Failed to exit fullscreen:", err);
+        });
+      }
+    };
 
     media.addEventListener("timeupdate", () => {
       currentTimeEl.textContent = formatTime(media.currentTime);
@@ -430,18 +430,18 @@ class MediaPlayer extends HTMLElement {
           e.preventDefault();
           media.currentTime = Math.max(media.currentTime - seekTime, 0);
           break;
-        // case "KeyF": // fullscreen toggle
-        //   e.preventDefault();
-        //   if (!document.fullscreenElement) {
-        //     this.requestFullscreen().catch((err) => {
-        //       console.warn("Failed to enter fullscreen:", err);
-        //     });
-        //   } else {
-        //     document.exitFullscreen().catch((err) => {
-        //       console.warn("Failed to exit fullscreen:", err);
-        //     });
-        //   }
-        //   break;
+        case "KeyF": // fullscreen toggle
+          e.preventDefault();
+          if (!document.fullscreenElement) {
+            this.requestFullscreen().catch((err) => {
+              console.warn("Failed to enter fullscreen:", err);
+            });
+          } else {
+            document.exitFullscreen().catch((err) => {
+              console.warn("Failed to exit fullscreen:", err);
+            });
+          }
+          break;
       }
     });
   }
