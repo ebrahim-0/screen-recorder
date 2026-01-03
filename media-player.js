@@ -134,7 +134,7 @@ class MediaPlayer extends HTMLElement {
     this.shadowRoot.innerHTML = `
       <style>
         * { box-sizing: border-box; }
-        :host { display: block; max-width: 900px; margin: auto; }
+        :host { display: block; margin: auto; }
         :host([hidden]) { display: none !important; }
         video, audio { width: 100%; border-radius: 8px; background: black; }
         .icon { width: 14px; height: 14px; fill: white; }
